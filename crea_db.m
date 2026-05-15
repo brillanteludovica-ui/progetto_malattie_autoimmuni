@@ -1,49 +1,45 @@
-% 1. Connessione (Creazione del file da zero nella cartella database)
+% 1. Connessione (Creazione del file da zero)
 if ~exist('database', 'dir')
     mkdir('database');
 end
-conn = sqlite('database/sistema_sanitario.db');
+% Usiamo 'create' per sicurezza
+conn = sqlite('database/sistema_sanitario.db', 'create');
 
-% 2. Creazione Tabella MALATTIE
-execute(conn, ['CREATE TABLE IF NOT EXISTS Malattie (' ...
-    'ID_Malattia INTEGER PRIMARY KEY AUTOINCREMENT, ' ...
-    'Nome TEXT UNIQUE, ' ...
-    'Descrizione TEXT, ' ...
-    'Percentuale_Donne REAL, ' ...
-    'Percentuale_Uomini REAL)']);
-
-% 3. Creazione Tabella DATI EPIDEMIOLOGICI
-execute(conn, ['CREATE TABLE IF NOT EXISTS Dati_Epidemiologici (' ...
-    'ID_Dato INTEGER PRIMARY KEY AUTOINCREMENT, ' ...
-    'Nome_Malattia TEXT, ' ...
-    'Anno INTEGER, ' ...
-    'Regione TEXT, ' ...
-    'Casi_Totali INTEGER, ' ...
-    'Sintomatici INTEGER, ' ...
-    'Gravita_Media REAL, ' ...
-    'Tasso_Mortalita REAL, ' ...
-    'Tot_Nazionale_Percentuale REAL)']);
-
-% 4. Creazione Tabella UTENTI
+% 2. CREAZIONE TABELLA UTENTI (L'unica che creiamo a mano perché non è nell'Excel)
 execute(conn, ['CREATE TABLE IF NOT EXISTS Utenti (' ...
     'ID_Utente INTEGER PRIMARY KEY AUTOINCREMENT, ' ...
     'Username TEXT UNIQUE, ' ...
     'Password TEXT, ' ...
     'Ruolo TEXT)']);
 
-% 5. Inserimento Utenti di Prova
+% 3. Inserimento Utenti di Prova
 try
     execute(conn, "INSERT INTO Utenti (Username, Password, Ruolo) VALUES ('guest', 'guest123', 'Guest')");
     execute(conn, "INSERT INTO Utenti (Username, Password, Ruolo) VALUES ('ricercatore', 'admin123', 'Ricercatore')");
 catch
+    % Se esistono già, non fa nulla
 end
 
-% 6. Inserimento di esempio (Le tue "righe")
-try
-    execute(conn, "INSERT INTO Malattie (Nome, Descrizione, Percentuale_Donne, Percentuale_Uomini) VALUES ('Malattia Esempio 1', 'Descrizione test', 50.0, 50.0)");
-catch
-end
+% 4. IMPORTAZIONE AUTOMATICA DALL'EXCEL (Qui MATLAB crea le tabelle da solo)
+% Assicuratevi che il nome del file Excel sia identico!
+nomeExcel = 'database/Foglio dati progetto Chiara e Ludo.xlsx';
 
-% 7. Messaggio finale e chiusura
-disp('Database ricreato da zero, tabelle pronte e righe inserite!');
+% Importa Anagrafica -> Tabella Malattie
+opts1 = detectImportOptions(nomeExcel, 'Sheet', 'Anagrafica');
+sqlwrite(conn, 'Malattie', readtable(nomeExcel, opts1));
+
+% Importa Statistiche_Generali -> Tabella Statistiche_Storiche
+opts2 = detectImportOptions(nomeExcel, 'Sheet', 'Statistiche_Generali');
+sqlwrite(conn, 'Statistiche_Storiche', readtable(nomeExcel, opts2));
+
+% Importa Epidemiologia -> Tabella Dati_Epidemiologici
+opts3 = detectImportOptions(nomeExcel, 'Sheet', 'Epidemiologia');
+sqlwrite(conn, 'Dati_Epidemiologici', readtable(nomeExcel, opts3));
+
+% Importa Demografia -> Tabella Demografia
+opts4 = detectImportOptions(nomeExcel, 'Sheet', 'Demografia');
+sqlwrite(conn, 'Demografia', readtable(nomeExcel, opts4));
+
+% 5. Messaggio finale e chiusura
+disp('Database creato con successo con tutti i 4 fogli e la tabella Utenti!');
 close(conn);
