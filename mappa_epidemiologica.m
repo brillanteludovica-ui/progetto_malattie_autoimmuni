@@ -1,9 +1,9 @@
 function italia()
     clear; clc; close all;
     
-    % =========================================================================
+
     % GESTIONE AUTOMATICA DEI PERCORSI
-    % =========================================================================
+   
     percorsoScript = fileparts(mfilename('fullpath'));
     if ~isempty(percorsoScript), cd(percorsoScript); end
     
@@ -34,9 +34,8 @@ function italia()
     
     fprintf('File caricati con successo.\n');
     
-    % =========================================================================
     % CARICAMENTO DATI
-    % =========================================================================
+ 
     regioniShp = shaperead(nomeFileShp); 
     datiExcelTutti = readtable(nomeFileExcel, 'Sheet', 3, 'VariableNamingRule', 'preserve'); 
     
@@ -70,16 +69,15 @@ function italia()
     end
     vettoreDatiTutti(isnan(vettoreDatiTutti)) = 0;
     
-    % =========================================================================
-    % CREA L'INTERFACCIA GRAFICA
-    % =========================================================================
+    % INTERFACCIA GRAFICA
+   
     fig = figure('Name', 'Mappa Epidemiologica - Alta Sensibilita', ...
                  'NumberTitle', 'off', 'MenuBar', 'none', 'ToolBar', 'none', ...
                  'Position', [150, 100, 850, 650]);
              
     axMappa = axes('Parent', fig, 'Position', [0.05, 0.20, 0.70, 0.70]);
     
-    % Usiamo la mappa 'jet' o 'turbo' per il massimo contrasto visivo
+ 
     mappaColori = turbo(256); 
     numColori = size(mappaColori, 1);
     
@@ -110,9 +108,9 @@ function italia()
 
     aggiornaVisualizzazione();
     
-    % =========================================================================
+  
     % FUNZIONI INTERNE
-    % =========================================================================
+  
     function cambiaMalattia(src, ~)
         indiceMalattiaCorrente = src.Value; 
         aggiornaVisualizzazione();
@@ -147,10 +145,9 @@ function italia()
         datiFiltratiCorrenti = datiExcelTutti(righeAnno & righeTutteDellaMalattia, :);
         valoriCorrenti = vettoreDatiTutti(righeAnno & righeTutteDellaMalattia);
         regioniCorrenti = string(datiFiltratiCorrenti.(nomeColonnaRegioni));
-        
-        % ----------------=================================================
-        % CUORE DELL'ALTA SENSIBILITÀ: SCALA DINAMICA ANNUALE
-        % ----------------=================================================
+      
+        % SCALA DINAMICA ANNUALE
+
         minValAnno = min(valoriCorrenti);
         maxValAnno = max(valoriCorrenti);
         
@@ -177,7 +174,7 @@ function italia()
         cb.TickLabels = cellstr(num2str(valoriArrotondati));
         ylabel(cb, 'Casi nell''anno selezionato (Scala Logaritmica Iper-Sensibile)', 'FontSize', 10, 'FontWeight', 'bold');
         
-        % Colorazione dei poligoni
+        % Colorazione regioni
         for j = 1:length(regioniShp)
             nomeShpNormalizzato = normalizzaNome(regioniShp(j).DEN_REG);
             indiceTrovato = [];
@@ -216,7 +213,7 @@ function italia()
                     coloreRegione = mappaColori(idx, :);
                 end
             else
-                coloreRegione = [0.6 0.6 0.6]; % Regione non trovata nell'Excel
+                coloreRegione = [0.6 0.6 0.6]; 
             end
             
             hObj = handlePoligoni{j};

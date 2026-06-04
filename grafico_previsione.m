@@ -1,8 +1,8 @@
-% GRAFICO PREVISIONE E TENDENZA - VERSIONE INDICIZZATA (BASE 2018) ED ELEGANTE
+% GRAFICO PREVISIONE E TENDENZA 
 function grafico_previsione()
     clear; clc; close all;
 
-    % 1. Carica i dati dal database
+    % Carica i dati dal database
     nomeFile = 'Foglio dati progetto Chiara e Ludo.xlsx';
     dfEpidemio = readtable(nomeFile, 'Sheet', 'Epidemiologia', 'VariableNamingRule', 'preserve');
 
@@ -10,7 +10,7 @@ function grafico_previsione()
     anniStorici = unique(dfEpidemio.Anno)';
     anniFuturi = anniStorici(1):2028; 
 
-    % 2. Interfaccia grafica (Sfondo bianco puro)
+    % Interfaccia grafica 
     figPrev = figure('Name', 'Previsione e Linee di Tendenza', 'Color', 'w', 'Position', [200, 150, 950, 580]);
     elencoOpzioni = [nomiMalattie; {'Tutte Insieme'}];
 
@@ -30,13 +30,13 @@ function grafico_previsione()
         set(axPrev, 'YGrid', 'on', 'XGrid', 'off', 'GridColor', [0.85 0.85 0.85], 'GridAlpha', 0.6);
         
         if scelta <= length(nomiMalattie)
-            % --- SINGOLA MALATTIA (Mantiene il suo colore fisso!) ---
+            % SINGOLA MALATTIA 
             nomeSelezionato = nomiMalattie{scelta};
             coloreFisso = ottieniColoreMalattia(nomeSelezionato, nomiMalattie);
             tracciaMalattia(nomeSelezionato, coloreFisso, true);
         else
-            % --- TUTTE INSIEME (Partono tutte da 100 nel 2018) ---
-            vettoreGraficiReali = []; % Serve per ripulire la legenda dai tratti predittivi
+            % TUTTE INSIEME (Partono tutte da 100 nel 2018) 
+            vettoreGraficiReali = []; 
             for idx = 1:length(nomiMalattie)
                 coloreCorrente = ottieniColoreMalattia(nomiMalattie{idx}, nomiMalattie);
                 hPlot = tracciaMalattia(nomiMalattie{idx}, coloreCorrente, false);
@@ -70,11 +70,11 @@ function grafico_previsione()
         if valoreIniziale2018 == 0, valoreIniziale2018 = 1; end % Evita divisioni per zero
         andamentoIndicizzato = (totaliAnno / valoreIniziale2018) * 100;
         
-        % 1. Disegna i dati storici reali indicizzati
+        % Disegna i dati storici reali indicizzati
         hStorico = plot(axPrev, anniStorici, andamentoIndicizzato, 'o-', 'LineWidth', 2.8, 'Color', colore, ...
              'MarkerFaceColor', 'w', 'MarkerSize', 7);
         
-        % 2. Calcolo predittivo basato sull'indice di crescita
+        % Calcolo predittivo basato sull'indice di crescita
         p = polyfit(anniStorici', andamentoIndicizzato, 1); 
         valoriTrend = polyval(p, anniFuturi);
         
@@ -97,9 +97,9 @@ function grafico_previsione()
             1.00, 0.00, 0.00;  % 1. Rosso Fuoco
             0.00, 0.45, 1.00;  % 2. Blu Elettrico
             0.00, 0.75, 0.20;  % 3. Verde Brillante
-            0.90, 0.00, 0.60;  % 4. Magenta / Fucsia Carico
+            0.90, 0.00, 0.60;  % 4. Magenta / Fucsia 
             0.95, 0.65, 0.00;  % 5. Giallo Oro / Arancione
-            0.50, 0.00, 0.90   % 6. Viola Neon
+            0.50, 0.00, 0.90   % 6. Viola 
         ];
         % Trova la posizione fissa della malattia nell'elenco alfabetico Excel
         idFisso = find(strcmpi(listaMalattie, nomeMal));
