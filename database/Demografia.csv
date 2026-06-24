@@ -1,0 +1,31 @@
+Nome_Malattia,Fascia_Eta,Numero_Casi
+Sclerosi Multipla,0-18,2000
+Sclerosi Multipla,19-29,23000
+Sclerosi Multipla,30-39,36000
+Sclerosi Multipla,40-49,26000
+Sclerosi Multipla,50-59,18000
+Sclerosi Multipla,60+,12000
+Celiachia,0-18,4200
+Celiachia,19-29,33000
+Celiachia,30-39,39000
+Celiachia,40-49,50000
+Celiachia,50-59,56000
+Celiachia,60+,59000
+Diabete Tipo 1,0-18,86000
+Diabete Tipo 1,19-29,52000
+Diabete Tipo 1,30-39,52000
+Diabete Tipo 1,40-49,52000
+Diabete Tipo 1,50-59,52000
+Diabete Tipo 1,60+,52000
+Tiroidite di Hashimoto,0-18,36000
+Tiroidite di Hashimoto,19-29,180000
+Tiroidite di Hashimoto,30-39,396000
+Tiroidite di Hashimoto,40-49,450000
+Tiroidite di Hashimoto,50-59,414000
+Tiroidite di Hashimoto,60+,324000
+Morbo di Crohn,0-18,12500
+Morbo di Crohn,19-29,31000
+Morbo di Crohn,30-39,27500
+Morbo di Crohn,40-49,18750
+Morbo di Crohn,50-59,18750
+Morbo di Crohn,60+,16250

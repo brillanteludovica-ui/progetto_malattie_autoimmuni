@@ -1,0 +1,6 @@
+Nome,Descrizione,Percentuale_Donne,Percentuale_Uomini,Costo_Annuo_Paziente
+Sclerosi Multipla,"Malattia cronica autoimmune del sistema nervoso centrale. Il sistema immunitario attacca la mielina (guaina dei nervi), causando un'interruzione dei segnali tra cervello e corpo con sintomi neurologici variabili.",70,30,25000
+Celiachia,Infiammazione cronica dell'intestino tenue scatenata dall'ingestione di glutine in soggetti geneticamente predisposti. Causa il danneggiamento dei villi intestinali e compromette l'assorbimento dei nutrienti.,65,35,1200
+Diabete Tipo 1,"Malattia autoimmune in cui il pancreas produce pochissima o nulla insulina. Il sistema immunitario distrugge le cellule beta (responsabili della produzione di insulina), rendendo necessarie somministrazioni quotidiane dell'ormone.",45,55,6000
+Tiroidite di Hashimoto,Condizione autoimmune in cui il sistema immunitario attacca la tiroide. È la causa più comune di ipotiroidismo e porta a un'infiammazione cronica che riduce la capacità della ghiandola di produrre ormoni tiroidei.,85,15,500
+Morbo di Crohn,"Malattia infiammatoria cronica dell'apparato digerente (specialmente ileo e colon). Causa infiammazione profonda dei tessuti, edema ed ulcere.",55,45,15000
