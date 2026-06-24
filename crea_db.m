@@ -1,45 +1,63 @@
-% 1. Connessione (Creazione del file da zero)
+% SCRIPT UNIFICATO: CREAZIONE DA ZERO E AGGIORNAMENTO COMPLETO DATABASE SQL
+clear; clc;
+
+fileDatabase = 'database/sistema_sanitario.db';
+
+% Se la cartella database non esiste, la crea
 if ~exist('database', 'dir')
     mkdir('database');
 end
-% Usiamo 'create' per sicurezza
-conn = sqlite('database/sistema_sanitario.db', 'create');
 
-% 2. CREAZIONE TABELLA UTENTI (L'unica che creiamo a mano perché non è nell'Excel)
-execute(conn, ['CREATE TABLE IF NOT EXISTS Utenti (' ...
-    'ID_Utente INTEGER PRIMARY KEY AUTOINCREMENT, ' ...
-    'Username TEXT UNIQUE, ' ...
-    'Password TEXT, ' ...
-    'Ruolo TEXT)']);
-
-% 3. Inserimento Utenti di Prova
 try
-    execute(conn, "INSERT INTO Utenti (Username, Password, Ruolo) VALUES ('guest', 'guest123', 'Guest')");
-    execute(conn, "INSERT INTO Utenti (Username, Password, Ruolo) VALUES ('ricercatore', 'admin123', 'Ricercatore')");
-catch
-    % Se esistono già, non fa nulla
+    fprintf('Fase 1: Connessione e inizializzazione del Database...\n');
+    % Apre o crea il file .db da zero per sicurezza
+    conn = sqlite(fileDatabase, 'create');
+
+    % Crea la tabella Utenti se non esiste
+    execute(conn, ['CREATE TABLE IF NOT EXISTS Utenti (' ...
+        'ID_Utente INTEGER PRIMARY KEY AUTOINCREMENT, ' ...
+        'Username TEXT UNIQUE, ' ...
+        'Password TEXT, ' ...
+        'Ruolo TEXT)']);
+
+    % Inserisce gli utenti di prova
+    try
+        execute(conn, "INSERT INTO Utenti (Username, Password, Ruolo) VALUES ('guest', 'guest123', 'Guest')");
+        execute(conn, "INSERT INTO Utenti (Username, Password, Ruolo) VALUES ('ricercatore', 'admin123', 'Ricercatore')");
+    catch
+        % Se esistono già, ignora l'errore
+    end
+
+    fprintf('Fase 2: Lettura dei file CSV dalla cartella database...\n');
+    tabAnag  = readtable('database/Anagrafica.csv', 'VariableNamingRule', 'preserve');
+    tabEpi   = readtable('database/Epidemiologia.csv', 'VariableNamingRule', 'preserve');
+    tabDemo  = readtable('database/Demografia.csv', 'VariableNamingRule', 'preserve');
+    
+    % Se avete anche questo file, lo legge, altrimenti salta senza crashare
+    if isfile('database/Statistiche_Generali.csv')
+        tabStats = readtable('database/Statistiche_Generali.csv', 'VariableNamingRule', 'preserve');
+    else
+        tabStats = [];
+    end
+
+    fprintf('Fase 3: Scrittura strutturata delle tabelle SQL...\n');
+    % Scrive la tabella fondamentale per i costi sanitari
+    sqlwrite(conn, 'Malattie', tabAnag);
+    
+    % Scrive le altre tabelle per i grafici e le statistiche
+    sqlwrite(conn, 'Epidemiologia', tabEpi);
+    sqlwrite(conn, 'Demografia', tabDemo);
+    
+    if ~isempty(tabStats)
+        sqlwrite(conn, 'Statistiche_Generali', tabStats);
+    end
+
+    % Chiusura della connessione per salvare le modifiche
+    close(conn);
+    
+    fprintf('Operazione completata con successo!\n');
+    msgbox('Database SQLite creato e aggiornato con successo da tutti i flussi CSV!', 'Database Pronto');
+    
+catch ME
+    errordlg(['Errore durante la gestione del database: ' ME.message], 'Errore');
 end
-
-% 4. IMPORTAZIONE AUTOMATICA DALL'EXCEL (Qui MATLAB crea le tabelle da solo)
-% Assicuratevi che il nome del file Excel sia identico!
-nomeExcel = 'database/Foglio dati progetto Chiara e Ludo.xlsx';
-
-% Importa Anagrafica -> Tabella Malattie
-opts1 = detectImportOptions(nomeExcel, 'Sheet', 'Anagrafica');
-sqlwrite(conn, 'Malattie', readtable(nomeExcel, opts1));
-
-% Importa Statistiche_Generali -> Tabella Statistiche_Storiche
-opts2 = detectImportOptions(nomeExcel, 'Sheet', 'Statistiche_Generali');
-sqlwrite(conn, 'Statistiche_Storiche', readtable(nomeExcel, opts2));
-
-% Importa Epidemiologia -> Tabella Dati_Epidemiologici
-opts3 = detectImportOptions(nomeExcel, 'Sheet', 'Epidemiologia');
-sqlwrite(conn, 'Dati_Epidemiologici', readtable(nomeExcel, opts3));
-
-% Importa Demografia -> Tabella Demografia
-opts4 = detectImportOptions(nomeExcel, 'Sheet', 'Demografia');
-sqlwrite(conn, 'Demografia', readtable(nomeExcel, opts4));
-
-% 5. Messaggio finale e chiusura
-disp('Database creato con successo con tutti i 4 fogli e la tabella Utenti!');
-close(conn);

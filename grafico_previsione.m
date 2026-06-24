@@ -1,14 +1,15 @@
 % GRAFICO PREVISIONE E TENDENZA 
 function grafico_previsione()
-    clear; clc; close all;
-
+   clc; 
     % Carica i dati dal database
-    nomeFile = 'Foglio dati progetto Chiara e Ludo.xlsx';
-    dfEpidemio = readtable(nomeFile, 'Sheet', 'Epidemiologia', 'VariableNamingRule', 'preserve');
+    dfEpi = readtable('database/Epidemiologia.csv', 'VariableNamingRule', 'preserve');
 
-    nomiMalattie = unique(dfEpidemio.Nome_Malattia);
-    anniStorici = unique(dfEpidemio.Anno)';
-    anniFuturi = anniStorici(1):2028; 
+    
+    nomiMalattie = cellstr(sort(unique(dfEpi.Nome_Malattia)));
+    anniStorici = sort(unique(dfEpi.Anno));
+    anniStorici = anniStorici(:); 
+    startAnno = min(anniStorici);
+    anniFuturi = (startAnno:2028)';
 
     % Interfaccia grafica 
     figPrev = figure('Name', 'Previsione e Linee di Tendenza', 'Color', 'w', 'Position', [200, 150, 950, 580]);
@@ -30,26 +31,26 @@ function grafico_previsione()
         set(axPrev, 'YGrid', 'on', 'XGrid', 'off', 'GridColor', [0.85 0.85 0.85], 'GridAlpha', 0.6);
         
         if scelta <= length(nomiMalattie)
-            % SINGOLA MALATTIA 
+             
             nomeSelezionato = nomiMalattie{scelta};
             coloreFisso = ottieniColoreMalattia(nomeSelezionato, nomiMalattie);
             tracciaMalattia(nomeSelezionato, coloreFisso, true);
         else
-            % TUTTE INSIEME (Partono tutte da 100 nel 2018) 
-            vettoreGraficiReali = []; 
+             
+            vettoreGraficiReali = gobjects(1, length(nomiMalattie));
             for idx = 1:length(nomiMalattie)
                 coloreCorrente = ottieniColoreMalattia(nomiMalattie{idx}, nomiMalattie);
                 hPlot = tracciaMalattia(nomiMalattie{idx}, coloreCorrente, false);
-                vettoreGraficiReali = [vettoreGraficiReali, hPlot];
+                vettoreGraficiReali(idx) = hPlot;
             end
-            % Mostra in legenda solo le linee storiche reali, eliminando i doppioni dei tratteggi futuri
-            legend(axPrev, vettoreGraficiReali, nomiMalattie, 'Location', 'northeastoutside', ...
-                   'TextColor', [0 0 0], 'FontWeight', 'bold', 'EdgeColor', 'none', 'Color', 'w');
+            
+                 legend(axPrev, vettoreGraficiReali, nomiMalattie, 'Location', 'northeastoutside', ...
+                     'TextColor', [0 0 0], 'FontWeight', 'bold', 'EdgeColor', 'none', 'Color', 'w');
         end
         
         set(axPrev, 'XColor', [0 0 0], 'YColor', [0 0 0], ...
-                    'FontSize', 10, 'FontWeight', 'bold', 'FontName', 'Helvetica', ...
-                    'XTick', anniFuturi);
+                'FontSize', 10, 'FontWeight', 'bold', 'FontName', 'Helvetica');
+        xticks(axPrev, anniFuturi');
         
         xlabel(axPrev, 'Asse Temporale (Anni)', 'FontSize', 11, 'FontWeight', 'bold', 'Color', [0 0 0]);
         ylabel(axPrev, 'Indice di Crescita dei Casi (Base 2018 = 100%)', 'FontSize', 11, 'FontWeight', 'bold', 'Color', [0 0 0]);
@@ -61,50 +62,60 @@ function grafico_previsione()
     function hStorico = tracciaMalattia(nomeMal, colore, mostraTrend)
         totaliAnno = zeros(length(anniStorici), 1);
         for t = 1:length(anniStorici)
-            righe = strcmpi(string(dfEpidemio.Nome_Malattia), string(nomeMal)) & dfEpidemio.Anno == anniStorici(t);
-            totaliAnno(t) = sum(double(dfEpidemio.Casi_Totali(righe)), 'omitnan');
+            righe = strcmpi(string(dfEpi.Nome_Malattia), string(nomeMal)) & dfEpi.Anno == anniStorici(t);
+            if any(righe)
+                totaliAnno(t) = sum(double(dfEpi.Casi_Totali(righe)), 'omitnan');
+            else
+                totaliAnno(t) = NaN;
+            end
         end
         
-        % TRASFORMAZIONE IN INDICE PERCENTUALE (Fascia di partenza comune a 100)
+        
         valoreIniziale2018 = totaliAnno(1);
-        if valoreIniziale2018 == 0, valoreIniziale2018 = 1; end % Evita divisioni per zero
+        if valoreIniziale2018 == 0, valoreIniziale2018 = 1; end 
         andamentoIndicizzato = (totaliAnno / valoreIniziale2018) * 100;
         
-        % Disegna i dati storici reali indicizzati
+        
         hStorico = plot(axPrev, anniStorici, andamentoIndicizzato, 'o-', 'LineWidth', 2.8, 'Color', colore, ...
              'MarkerFaceColor', 'w', 'MarkerSize', 7);
         
-        % Calcolo predittivo basato sull'indice di crescita
-        p = polyfit(anniStorici', andamentoIndicizzato, 1); 
-        valoriTrend = polyval(p, anniFuturi);
+        
+        validIdx = ~isnan(andamentoIndicizzato);
+        if sum(validIdx) >= 2
+            p = polyfit(anniStorici(validIdx), andamentoIndicizzato(validIdx), 1);
+            valoriTrend = polyval(p, anniFuturi);
+        else
+            valoriTrend = nan(size(anniFuturi));
+        end
         
         if mostraTrend
-            % Se singola mostra il trend futuro continuo proiettato
-            plot(axPrev, anniFuturi, valoriTrend, '--', 'LineWidth', 1.8, 'Color', colore * 0.6);
+            
+            plot(axPrev, anniFuturi, valoriTrend, '--', 'LineWidth', 1.8, 'Color', max(min(colore * 0.6,1),0));
             legend(axPrev, {['Storico Indicizzato (' nomeMal ')'], 'Modello di Tendenza Futura'}, ...
                    'Location', 'northeast', 'TextColor', [0 0 0], 'FontWeight', 'bold', 'EdgeColor', 'none', 'Color', 'w');
             xlim(axPrev, [anniFuturi(1)-0.5, anniFuturi(end)+0.5]);
         else
-            % Se sono tutte insieme, prolunga con i punti fini
-            plot(axPrev, anniFuturi(end-3:end), valoriTrend(end-3:end), ':', 'LineWidth', 2.2, 'Color', colore);
+            
+            idxPlot = max(1, length(anniFuturi)-3):length(anniFuturi);
+            plot(axPrev, anniFuturi(idxPlot), valoriTrend(idxPlot), ':', 'LineWidth', 2.2, 'Color', colore);
             xlim(axPrev, [anniStorici(1)-0.5, anniStorici(end)+0.5]);
         end
     end
 
-    %% FUNZIONE INTERNA PER ASSOCIARE UN COLORE UNIVOCO FISSO AD OGNI MALATTIA
+    
     function cout = ottieniColoreMalattia(nomeMal, listaMalattie)
         mappaColoriMiei = [
             1.00, 0.00, 0.00;  % 1. Rosso Fuoco
             0.00, 0.45, 1.00;  % 2. Blu Elettrico
-            0.00, 0.75, 0.20;  % 3. Verde Brillante
+            0.00, 0.75, 0.20;  % 3. Verde 
             0.90, 0.00, 0.60;  % 4. Magenta / Fucsia 
             0.95, 0.65, 0.00;  % 5. Giallo Oro / Arancione
             0.50, 0.00, 0.90   % 6. Viola 
         ];
-        % Trova la posizione fissa della malattia nell'elenco alfabetico Excel
+        
         idFisso = find(strcmpi(listaMalattie, nomeMal));
         if isempty(idFisso), idFisso = 1; end
-        % Estrae il colore corrispondente
+        
         cout = mappaColoriMiei(mod(idFisso-1, size(mappaColoriMiei, 1)) + 1, :);
     end
 end

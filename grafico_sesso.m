@@ -1,46 +1,94 @@
 % GRAFICO PERCENTUALE SESSO 
-clear; clc; close all;
+function grafico_sesso()
+    clc; 
 
-% 1. Carica i dati
-nomeFile = 'Foglio dati progetto Chiara e Ludo.xlsx';
-dfAnagrafica = readtable(nomeFile, 'Sheet', 'Anagrafica', 'VariableNamingRule', 'preserve');
-
-% Chiede l'input all'utente
-nomiMalattie = unique(dfAnagrafica.Nome);
-[idx, ok] = listdlg('PromptString', 'Seleziona una malattia per la distinzione Sesso:', ...
-                    'SelectionMode', 'single', 'ListString', nomiMalattie);
-
-if ok
-    malattiaAttiva = nomiMalattie{idx};
-    rigaAnag = dfAnagrafica(strcmpi(dfAnagrafica.Nome, malattiaAttiva), :);
-    
-    
-    figure('Name', ['Percentuale Sesso - ' malattiaAttiva], 'Color', 'w', 'Position', [350, 200, 550, 450]);
-    
-    % Creiamo il grafico a torta
-    pressioneTorta = pie([rigaAnag.Percentuale_Donne(1), rigaAnag.Percentuale_Uomini(1)], {'Donne', 'Uomini'});
-    
-    % COLORI DEGLI SPICCHI (Rosa per Donne, Blu per Uomini)
-   
-    fette = findobj(pressioneTorta, 'Type', 'patch');
-    
-    % Definiamo i colori personalizzati in formato RGB (valori da 0 a 1)
-    coloreRosa = [1, 0.6, 0.78];  % Rosa
-    coloreBlu  = [0.2, 0.6, 0.9]; % Blu
-    
-    % MATLAB inserisce gli elementi nel vettore in ordine inverso rispetto alla creazione
-    if length(fette) == 2
-        set(fette(2), 'FaceColor', coloreBlu);  % Seconda fetta (Uomini)
-        set(fette(1), 'FaceColor', coloreRosa); % Prima fetta (Donne)
+    % Carica i dati dal file CSV 
+    nomeFile = 'database/Anagrafica.csv';
+    if ~exist(nomeFile, 'file')
+        errordlg('Errore: Il file database/Anagrafica.csv non esiste!', 'Errore File');
+        return;
     end
     
-    
-    elementiTesto = findobj(pressioneTorta, 'Type', 'text');
-    for k = 1:length(elementiTesto)
-        set(elementiTesto(k), 'Color', [0 0 0], ...     
-                              'FontSize', 11, ...       
-                              'FontWeight', 'bold');   
+    try
+        dfAnagrafica = readtable(nomeFile, 'Delimiter', ',', 'VariableNamingRule', 'preserve');
+        if width(dfAnagrafica) < 3
+            dfAnagrafica = readtable(nomeFile, 'Delimiter', ';', 'VariableNamingRule', 'preserve');
+        end
+    catch
+        dfAnagrafica = readtable(nomeFile, 'VariableNamingRule', 'preserve');
     end
+
     
-    title(['Percentuale per Sesso: ' malattiaAttiva], 'FontSize', 13, 'FontWeight', 'bold', 'Color', [0 0 0]);
+    nomiMalattie = { ...
+        'Sclerosi Multipla'; ...
+        'Celiachia'; ...
+        'Diabete Tipo 1'; ...
+        'Tiroidite di Hashimoto'; ...
+        'Morbo di Crohn' ...
+    };
+    
+    
+    [idx, ok] = listdlg('PromptString', 'Seleziona una malattia per la distinzione Sesso:', ...
+                        'SelectionMode', 'single', 'ListString', nomiMalattie, ...
+                        'ListSize', [300, 250]);
+
+    if ok
+        malattiaSelezionata = nomiMalattie{idx};
+        
+        stringaCercata = lower(regexprep(malattiaSelezionata, '[_\s]', ''));
+        listaMalattieCSV = lower(regexprep(string(dfAnagrafica{:, 1}), '[_\s]', ''));
+        
+        righeValide = false(height(dfAnagrafica), 1);
+        for r = 1:length(listaMalattieCSV)
+            if contains(listaMalattieCSV(r), stringaCercata) || contains(stringaCercata, listaMalattieCSV(r))
+                righeValide(r) = true;
+            end
+        end
+        
+        rigaAnag = dfAnagrafica(righeValide, :);
+        
+        if isempty(rigaAnag)
+            errordlg(['Nessun dato trovato nel CSV per la malattia: ' malattiaSelezionata], 'Errore Dati');
+            return;
+        end
+        
+        
+        valDonne = double(rigaAnag{1, 3});
+        valUomini = double(rigaAnag{1, 4});
+
+        if isnan(valDonne), valDonne = 0; end
+        if isnan(valUomini), valUomini = 0; end
+
+        if (valDonne + valUomini) == 0
+            msgbox('I valori per questa patologia sono pari a zero o mancanti.', 'Attenzione');
+            return;
+        end
+
+        
+        figure('Name', ['Percentuale Sesso - ' malattiaSelezionata], 'Color', 'w', ...
+               'Position', [350, 200, 550, 450], 'MenuBar', 'none', 'ToolBar', 'none');
+        
+        
+        hPie = pie([valDonne, valUomini], {'Donne', 'Uomini'});
+        
+        
+        coloreRosa = [1, 0.6, 0.78];  % Rosa 
+        coloreBlu  = [0.2, 0.6, 0.9]; % Blu
+        
+        
+        set(hPie(1), 'FaceColor', coloreRosa, 'EdgeColor', 'w', 'LineWidth', 1); 
+        if length(hPie) >= 3
+            set(hPie(3), 'FaceColor', coloreBlu, 'EdgeColor', 'w', 'LineWidth', 1);  
+        end
+        
+       
+        elementiTesto = findobj(hPie, 'Type', 'text');
+        for k = 1:length(elementiTesto)
+            set(elementiTesto(k), 'Color', [0 0 0], ...     
+                                  'FontSize', 11, ...       
+                                  'FontWeight', 'bold');    
+        end
+        
+        title(['Percentuale per Sesso: ' malattiaSelezionata], 'FontSize', 13, 'FontWeight', 'bold', 'Color', [0 0 0]);
+    end
 end

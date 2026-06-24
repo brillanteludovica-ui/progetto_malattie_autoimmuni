@@ -1,9 +1,7 @@
-function italia()
-    clear; clc; close all;
-    
+function mappa_epidemiologica()
+   clc; 
 
-    % GESTIONE AUTOMATICA DEI PERCORSI
-   
+    
     percorsoScript = fileparts(mfilename('fullpath'));
     if ~isempty(percorsoScript), cd(percorsoScript); end
     
@@ -14,30 +12,18 @@ function italia()
         cartellaRicerca = ".";
     end
     
+    
     elencoShp = dir(fullfile(cartellaRicerca, "*.shp"));
     if isempty(elencoShp)
-        error("Errore: Mappa .shp non trouvata.");
+        error("Errore: Mappa .shp non trovata.");
     end
     nomeFileShp = elencoShp(1).name;
     
-    elencoExcel = dir(fullfile(".", "*.xlsx")); 
-    if isempty(elencoExcel)
-        elencoExcel = dir(fullfile(cartellaRicerca, "*.xlsx")); 
-    end
-    if isempty(elencoExcel)
-        elencoExcel = dir(fullfile(".", "*.xls")); 
-    end
-    if isempty(elencoExcel)
-        error("Errore: File Excel non trovato.");
-    end
-    nomeFileExcel = elencoExcel(1).name;
+    fprintf('File geografici caricati con successo.\n');
     
-    fprintf('File caricati con successo.\n');
     
-    % CARICAMENTO DATI
- 
     regioniShp = shaperead(nomeFileShp); 
-    datiExcelTutti = readtable(nomeFileExcel, 'Sheet', 3, 'VariableNamingRule', 'preserve'); 
+    datiExcelTutti = readtable('database/Epidemiologia.csv', 'VariableNamingRule', 'preserve'); 
     
     anniDisponibili = 2018:2025;
     indiceAnnoCorrente = 1; 
@@ -69,15 +55,14 @@ function italia()
     end
     vettoreDatiTutti(isnan(vettoreDatiTutti)) = 0;
     
-    % INTERFACCIA GRAFICA
-   
-    fig = figure('Name', 'Mappa Epidemiologica - Alta Sensibilita', ...
+    
+    fig = figure('Name', 'Mappa Epidemiologica', ...
                  'NumberTitle', 'off', 'MenuBar', 'none', 'ToolBar', 'none', ...
                  'Position', [150, 100, 850, 650]);
              
     axMappa = axes('Parent', fig, 'Position', [0.05, 0.20, 0.70, 0.70]);
     
- 
+    
     mappaColori = turbo(256); 
     numColori = size(mappaColori, 1);
     
@@ -89,11 +74,14 @@ function italia()
     uicontrol('Parent', fig, 'Style', 'popupmenu', ...
         'String', nomiMalattie, 'Position', [610, 25, 180, 25], 'FontSize', 11, ...
         'Callback', @cambiaMalattia);
+    
     uicontrol('Parent', fig, 'Style', 'pushbutton', 'String', '<< Indietro', ...
         'Position', [50, 20, 100, 30], 'FontSize', 11, 'Callback', @(~,~) cambiaAnno(-1));
+    
     testoAnno = uicontrol('Parent', fig, 'Style', 'text', ...
         'String', 'Anno: 2018', 'Position', [160, 20, 120, 25], ...
         'FontSize', 16, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
+        
     uicontrol('Parent', fig, 'Style', 'pushbutton', 'String', 'Avanti >>', ...
         'Position', [290, 20, 100, 30], 'FontSize', 11, 'Callback', @(~,~) cambiaAnno(1));
     
@@ -101,16 +89,14 @@ function italia()
     
     handlePoligoni = cell(length(regioniShp), 1);
     for i = 1:length(regioniShp)
-        handlePoligoni{i} = mapshow(axMappa, regioniShp(i), 'FaceColor', [0.6 0.6 0.6], 'EdgeColor', [0.2 0.2 0.2]);
+        handlePoligoni{i} = mapshow(axMappa, regioniShp(i), 'FaceColor', [0.9 0.9 0.9], 'EdgeColor', [0.2 0.2 0.2]);
     end
     axis(axMappa, 'equal');  
     axis(axMappa, 'off'); 
 
     aggiornaVisualizzazione();
     
-  
-    % FUNZIONI INTERNE
-  
+    
     function cambiaMalattia(src, ~)
         indiceMalattiaCorrente = src.Value; 
         aggiornaVisualizzazione();
@@ -120,7 +106,7 @@ function italia()
         nuovoIndice = indiceAnnoCorrente + direzione;
         if nuovoIndice >= 1 && nuovoIndice <= length(anniDisponibili)
             indiceAnnoCorrente = nuovoIndice;
-            testoAnno.String = ['Anno: ', num2str(anniDisponibili(indiceAnnoCorrente))];
+            set(testoAnno, 'String', ['Anno: ', num2str(anniDisponibili(indiceAnnoCorrente))]);
             aggiornaVisualizzazione();
         end
     end 
@@ -141,40 +127,37 @@ function italia()
         vettoreMalattieTutti = string(datiExcelTutti.(nomeColonnaMalattie));
         righeTutteDellaMalattia = strcmpi(vettoreMalattieTutti, string(malattiaAttiva));
         
+        
+        valoriTuttiAnni = vettoreDatiTutti(righeTutteDellaMalattia);
+        
+        
+        minLogAssoluto = log1p(min(valoriTuttiAnni));
+        maxLogAssoluto = log1p(max(valoriTuttiAnni));
+        
+        if maxLogAssoluto == minLogAssoluto
+            maxLogAssoluto = minLogAssoluto + 1;
+        end
+        
+        
+        if exist('clim', 'file')
+            clim(axMappa, [minLogAssoluto maxLogAssoluto]);
+        else
+            caxis(axMappa, [minLogAssoluto maxLogAssoluto]);
+        end
+        
+        
+        puntiTick = linspace(minLogAssoluto, maxLogAssoluto, 5);
+        cb.Ticks = puntiTick;
+        cb.TickLabels = cellstr(num2str(round(expm1(puntiTick))'));
+        ylabel(cb, 'Numero Casi Rilevati ', 'FontSize', 10, 'FontWeight', 'bold');
+        
+        
         righeAnno = (vettoreAnniTutti == annoAttivo);
         datiFiltratiCorrenti = datiExcelTutti(righeAnno & righeTutteDellaMalattia, :);
         valoriCorrenti = vettoreDatiTutti(righeAnno & righeTutteDellaMalattia);
         regioniCorrenti = string(datiFiltratiCorrenti.(nomeColonnaRegioni));
-      
-        % SCALA DINAMICA ANNUALE
-
-        minValAnno = min(valoriCorrenti);
-        maxValAnno = max(valoriCorrenti);
         
-        if isempty(maxValAnno) || maxValAnno == 0
-            maxValAnno = 1;
-        end
         
-        % Applichiamo il logaritmo solo sui valori strettamente positivi
-        minLog = log1p(minValAnno);
-        maxLog = log1p(maxValAnno);
-        
-        if exist('clim', 'file')
-            clim(axMappa, [minLog maxLog]);
-        else
-            caxis(axMappa, [minLog maxLog]);
-        end
-        
-        % Generazione dinamica dei tick della legenda basati sull'anno corrente
-        puntiTick = linspace(minLog, maxLog, 5);
-        valoriConvertiti = expm1(puntiTick);
-        valoriArrotondati = round(transpose(valoriConvertiti));
-        
-        cb.Ticks = puntiTick;
-        cb.TickLabels = cellstr(num2str(valoriArrotondati));
-        ylabel(cb, 'Casi nell''anno selezionato (Scala Logaritmica Iper-Sensibile)', 'FontSize', 10, 'FontWeight', 'bold');
-        
-        % Colorazione regioni
         for j = 1:length(regioniShp)
             nomeShpNormalizzato = normalizzaNome(regioniShp(j).DEN_REG);
             indiceTrovato = [];
@@ -200,20 +183,19 @@ function italia()
                 valoreRiga = valoriCorrenti(indiceTrovato);
                 
                 if valoreRiga == 0
-                    % Se i casi sono zero, diamo un colore grigio neutro di fondo
-                    coloreRegione = [0.9 0.9 0.9];
+                    coloreRegione = [0.95 0.95 0.95]; 
                 else
+                    
                     valLog = log1p(valoreRiga);
-                    if maxLog == minLog
-                        idx = 1;
-                    else
-                        idx = round(1 + (numColori-1) * (valLog - minLog) / (maxLog - minLog));
-                    end
+                    
+                    
+                    rapporto = (valLog - minLogAssoluto) / (maxLogAssoluto - minLogAssoluto);
+                    idx = round(1 + (numColori-1) * rapporto);
                     idx = max(1, min(numColori, idx));
                     coloreRegione = mappaColori(idx, :);
                 end
             else
-                coloreRegione = [0.6 0.6 0.6]; 
+                coloreRegione = [0.8 0.8 0.8]; 
             end
             
             hObj = handlePoligoni{j};
@@ -232,8 +214,9 @@ function italia()
         end
         
         titoloPulito = strrep(malattiaAttiva, '_', ' '); 
-        title(axMappa, {['Malattia: ', titoloPulito], ['Distribuzione Casi Totali (Anno ', num2str(annoAttivo), ')']}, ...
+        title(axMappa, {['Malattia: ', titoloPulito], ['Andamento dei Casi Storici (Anno ', num2str(annoAttivo), ')']}, ...
             'FontSize', 13, 'FontWeight', 'bold');
+        
+        drawnow;
     end 
-
 end
