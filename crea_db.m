@@ -1,4 +1,4 @@
-% SCRIPT UNIFICATO: CREAZIONE DA ZERO E AGGIORNAMENTO COMPLETO DATABASE SQL
+
 clear; clc;
 
 fileDatabase = 'database/sistema_sanitario.db';
@@ -10,7 +10,7 @@ end
 
 try
     fprintf('Fase 1: Connessione e inizializzazione del Database...\n');
-    % Apre o crea il file .db da zero per sicurezza
+    
     conn = sqlite(fileDatabase, 'create');
 
     % Crea la tabella Utenti se non esiste
@@ -33,7 +33,7 @@ try
     tabEpi   = readtable('database/Epidemiologia.csv', 'VariableNamingRule', 'preserve');
     tabDemo  = readtable('database/Demografia.csv', 'VariableNamingRule', 'preserve');
     
-    % Se avete anche questo file, lo legge, altrimenti salta senza crashare
+    
     if isfile('database/Statistiche_Generali.csv')
         tabStats = readtable('database/Statistiche_Generali.csv', 'VariableNamingRule', 'preserve');
     else
@@ -41,10 +41,10 @@ try
     end
 
     fprintf('Fase 3: Scrittura strutturata delle tabelle SQL...\n');
-    % Scrive la tabella fondamentale per i costi sanitari
+    % Scrive la tabella per i costi sanitari
     sqlwrite(conn, 'Malattie', tabAnag);
     
-    % Scrive le altre tabelle per i grafici e le statistiche
+    % Scrive le tabelle per i grafici e le statistiche
     sqlwrite(conn, 'Epidemiologia', tabEpi);
     sqlwrite(conn, 'Demografia', tabDemo);
     
@@ -52,7 +52,7 @@ try
         sqlwrite(conn, 'Statistiche_Generali', tabStats);
     end
 
-    % Chiusura della connessione per salvare le modifiche
+    
     close(conn);
     
     fprintf('Operazione completata con successo!\n');
