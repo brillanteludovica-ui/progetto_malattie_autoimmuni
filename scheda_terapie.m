@@ -5,7 +5,7 @@ function scheda_terapie(idMalattia)
     fig = figure('Name', ['Terapie - ' malattia], 'NumberTitle', 'off', ...
         'MenuBar', 'none', 'ToolBar', 'none', 'Position', [450, 250, 560, 300], 'Color', 'w');
     
-    uicontrol('Parent', fig, 'Style', 'text', 'String', ['💊 PROTOCOLLI TERAPEUTICI: ' upper(malattia)], ...
+    uicontrol('Parent', fig, 'Style', 'text', 'String', [' PROTOCOLLI TERAPEUTICI: ' upper(malattia)], ...
         'Position', [20, 245, 520, 30], 'FontSize', 12, 'FontWeight', 'bold', 'BackgroundColor', 'w', ...
         'ForegroundColor', [0.10, 0.70, 0.40], 'HorizontalAlignment', 'left');
     
@@ -22,7 +22,7 @@ function scheda_terapie(idMalattia)
             t = 'Il trattamento farmacologico si basa sull''uso di antinfiammatori topici localizzati (mesalazina), immunosoppressori sistemici e farmaci biologici avanzati anti-TNF (es. Infliximab) per indurre e mantenere la remissione clinica. Nei casi complicati da stenosi fibrose serrate, occlusioni o perforazioni fistolose si ricorre alla chirurgia di resezione.';
     end
     
-    % Sostituito 'justify' con 'left'
+    
     uicontrol('Parent', fig, 'Style', 'text', 'String', t, 'Position', [20, 20, 520, 210], ...
         'FontSize', 11, 'BackgroundColor', 'w', 'ForegroundColor', 'k', 'HorizontalAlignment', 'left');
 end

@@ -1,10 +1,10 @@
-% =========================================================================
+
 % INTERFACCIA PRINCIPALE: SISTEMA EPIDEMIOLOGICO ITALIA
-% =========================================================================
+
 function login_centro_controllo()
     clc; close all;
 
-    % SCHERMATA GRAFICA DI LOGIN
+    % SCHERMATA LOGIN
     figLogin = figure('Name', 'Accesso Sistema', 'NumberTitle', 'off', ...
         'MenuBar', 'none', 'ToolBar', 'none', ...
         'Position', [500, 300, 420, 340], 'Color', 'w');
@@ -90,11 +90,11 @@ function apriCentroControllo(ruolo)
         'FontSize', 14, 'FontWeight', 'bold', ...
         'BackgroundColor', 'w', 'ForegroundColor', [0.00 0.45 1.00]);
 
-    % 📑 UNICO BOTTONE ORDINATO PER L'ANAGRAFICA CLINICA DEDICATA
+    % BOTTONE ANAGRAFICA CLINICA 
     uicontrol('Parent', figCentro, 'Style', 'pushbutton', ...
         'String', '📄 ANAGRAFICA CLINICA PATOLOGIE', ...
         'Position', [40, 485, 600, 45], 'FontSize', 11, 'FontWeight', 'bold', ...
-        ... % Richiama lo script della nuova dashboard clinica integrata
+        ... 
         'BackgroundColor', [0.00 0.45 1.00], 'ForegroundColor', 'w', ...
         'Callback', @(~,~) dashboard_clinica_anagrafica());
 

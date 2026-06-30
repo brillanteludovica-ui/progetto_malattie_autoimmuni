@@ -5,7 +5,7 @@ function scheda_descrizione(idMalattia)
     fig = figure('Name', ['Descrizione - ' malattia], 'NumberTitle', 'off', ...
         'MenuBar', 'none', 'ToolBar', 'none', 'Position', [450, 250, 560, 300], 'Color', 'w');
     
-    uicontrol('Parent', fig, 'Style', 'text', 'String', ['📄 DESCRIZIONE CLINICA AVANZATA: ' upper(malattia)], ...
+    uicontrol('Parent', fig, 'Style', 'text', 'String', [' DESCRIZIONE CLINICA AVANZATA: ' upper(malattia)], ...
         'Position', [20, 245, 520, 30], 'FontSize', 12, 'FontWeight', 'bold', 'BackgroundColor', 'w', ...
         'ForegroundColor', [0.20 0.60 1.00], 'HorizontalAlignment', 'left');
     
@@ -22,7 +22,7 @@ function scheda_descrizione(idMalattia)
             t = 'Il Morbo di Crohn è una complessa malattia infiammatoria cronica intestinale (MICI) a patogenesi immunitaria. È contraddistinta da un''infiammazione granulomatosa transmurale (che interessa cioè l''intero spessore della parete) ad andamento segmentario alternato "a macchia di leopardo", in grado di localizzarsi potenzialmente in qualsiasi distretto del tubo digerente.';
     end
     
-    % Sostituito 'justify' con 'left'
+    
     uicontrol('Parent', fig, 'Style', 'text', 'String', t, 'Position', [20, 20, 520, 210], ...
         'FontSize', 11, 'BackgroundColor', 'w', 'ForegroundColor', 'k', 'HorizontalAlignment', 'left');
 end

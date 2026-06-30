@@ -2,14 +2,14 @@ function motore_estrazione_anagrafica(idMalattia, tipoDato)
     nomi = {'Sclerosi Multipla', 'Celiachia', 'Diabete Tipo 1', 'Tiroidite di Hashimoto', 'Morbo di Crohn'};
     malattia = nomi{idMalattia};
 
-    % Configura i colori e i titoli in base al tipo di scheda estratto
+    
     switch tipoDato
         case 'descrizione'
-            titoloFinestra = 'Descrizione Clinica'; colTematico = [0.20 0.60 1.00]; prefisso = '📄 DESCRIZIONE CLINICA AVANZATA: ';
+            titoloFinestra = 'Descrizione Clinica'; colTematico = [0.20 0.60 1.00]; prefisso = ' DESCRIZIONE CLINICA AVANZATA: ';
         case 'sintomi'
-            titoloFinestra = 'Quadro Sintomatologico'; colTematico = [1.00, 0.35, 0.10]; prefisso = '⚠️ QUADRO SINTOMATOLOGICO STRUTTURATO: ';
+            titoloFinestra = 'Quadro Sintomatologico'; colTematico = [1.00, 0.35, 0.10]; prefisso = 'QUADRO SINTOMATOLOGICO STRUTTURATO: ';
         case 'terapie'
-            titoloFinestra = 'Protocolli Terapeutici'; colTematico = [0.10, 0.70, 0.40]; prefisso = '💊 PROTOCOLLI TERAPEUTICI DISPONIBILI: ';
+            titoloFinestra = 'Protocolli Terapeutici'; colTematico = [0.10, 0.70, 0.40]; prefisso = ' PROTOCOLLI TERAPEUTICI DISPONIBILI: ';
     end
 
     fig = figure('Name', [titoloFinestra ' - ' malattia], 'NumberTitle', 'off', ...
@@ -19,7 +19,7 @@ function motore_estrazione_anagrafica(idMalattia, tipoDato)
         'Position', [20, 245, 520, 30], 'FontSize', 12, 'FontWeight', 'bold', ...
         'BackgroundColor', 'w', 'ForegroundColor', colTematico, 'HorizontalAlignment', 'left');
 
-    % Database dei testi completi e approfonditi
+    
     switch malattia
         case 'Sclerosi Multipla'
             desc = 'La Sclerosi Multipla è una patologia cronica infiammatoria demielinizzante ad andamento progressivo. Il sistema immunitario attacca la guaina mielinica isolante dei neuroni nel sistema nervoso centrale, determinando placche sclero-cicatriziali che bloccano la normale conduzione degli impulsi bioelettrici lungo gli assoni.';
@@ -68,7 +68,7 @@ function motore_estrazione_anagrafica(idMalattia, tipoDato)
         case 'terapie', testoSelezionato = ter; align = 'justify';
     end
 
-    % Casella del testo: RIGOROSAMENTE NERO SU BIANCO
+    
     uicontrol('Parent', fig, 'Style', 'text', 'String', testoSelezionato, ...
         'Position', [20, 20, 520, 210], 'FontSize', 11, 'BackgroundColor', 'w', ...
         'ForegroundColor', 'k', 'HorizontalAlignment', align);
