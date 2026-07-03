@@ -7,81 +7,80 @@ Ambiente di sviluppo: MATLAB R2025b / R2026 + Visual studio Code
 Database: SQLite 3 e Flussi Strutturati CSV
 ------------------------------------------------------------------------
 
-1. INTRODUZIONE E OBIETTIVI DEL PROGETTO
-Il presente progetto consiste nella progettazione e nello 
-sviluppo di un sistema software integrato in ambiente MATLAB per la 
-gestione, il monitoraggio e l'analisi statistico-epidemiologica delle 
-principali patologie autoimmuni sul territorio nazionale.
+# INTRODUZIONE E OBIETTIVI DEL PROGETTO
 
-L'applicazione modella un'architettura dati a due livelli 
-(flussi di input CSV e database relazionale SQL) e fornisce
- un'interfaccia grafica (GUI) dinamica con accessi profilati 
-tramite credenziali gestite internamente nel database.
+Il presente progetto consiste nella progettazione e nello sviluppo di un sistema software integrato in ambiente MATLAB per la gestione, il monitoraggio e l'analisi statistico-epidemiologica delle principali patologie autoimmuni sul territorio nazionale.
 
+L'applicazione modella un'architettura dati a due livelli (flussi di input CSV e database relazionale SQL) e fornisce un'interfaccia grafica (GUI) dinamica con accessi profilati tramite credenziali gestite internamente nel database.
 
-2. ARCHITETTURA E PROGETTAZIONE DEL DATABASE
-Il sistema è stato strutturato seguendo le fasi classiche della 
-progettazione delle basi di dati:
+# ARCHITETTURA E PROGETTAZIONE DEL DATABASE
 
-A. Progettazione Concettuale (Modello ER):
-   Modellazione a stella incentrata sull'entità principale "MALATTIE". Le 
-   tabelle "EPIDEMIOLOGIA", "DEMOGRAFIA" e "STATISTICHE_GENERALI" 
-   sono collegate con relazione logica 1:N tramite Chiave Esterna 
-   (Foreign Key) basata sul nome della patologia.
+Il sistema è stato strutturato seguendo le fasi classiche della progettazione delle basi di dati:
 
-B. Traduzione nel Modello Relazionale (Modello Logico):
-   L'entità "UTENTI" presentava inizialmente una generalizzazione nei 
-   profili "Guest" e "Ricercatore". In fase di traduzione logica, per 
-   poter implementare i dati in SQL, è stato applicato il criterio di 
-   "Accorpamento nel Genitore", creando un'unica tabella ottimizzata con 
-   l'attributo "Ruolo" per gestire gli accessi in modo più efficiente.
+**A. Progettazione Concettuale (Modello ER):**
+Modellazione a stella incentrata sull'entità principale "MALATTIE".
 
-C. Struttura dei File nella Directory:
-   - login_centro_controllo.m   -> File principale (Interfaccia di Login e Menu)
-   - CreaDB.m                  -> Script unificato di inizializzazione SQL
-   - grafico_sesso.m           -> Analisi vettoriale e grafico a torta (Genere)
-   - grafico_eta.m             -> Analisi vettoriale e grafico a torta (Età)
-   - grafico_costi.m           -> Connessione SQLite e Analisi Spesa Sanitaria
-   - mappa_epidemiologica.m    -> Distribuzione geografica delle patologie
-   - database/                 -> Cartella locale protetta contenente:
-     * Anagrafica.csv, Demografia.csv, Epidemiologia.csv (Flussi di input)
-     * sistema_sanitario.db (Database relazionale SQLite autogenerato)
+**B. Traduzione nel Modello Relazionale (Modello Logico).**
 
+**C. Struttura dei file nella directory:**
 
-3. GUIDA ALL'AVVIO E FUNZIONAMENTO
+* login_centro_controllo.m → File principale (interfaccia di login e menu)
+* CreaDB.m → Script unificato di inizializzazione SQL
+* anagrafica_clinica.m → Schermata principale di selezione e scomposizione delle patologie
+* descrizione_clinica.m → Sotto-modulo testuale per l'eziopatogenesi
+* quadro_sintomatologico.m → Sotto-modulo per la consultazione rapida dei sintomi
+* organi_coinvolti.m → Sotto-modulo per la mappa anatomica visiva
+* protocolli_terapeutici.m → Sotto-modulo per le linee guida sui trattamenti
+* grafico_sesso.m → Analisi vettoriale e grafico a torta (genere)
+* grafico_eta.m → Analisi vettoriale e grafico a barre tridimensionale (età)
+* grafico_costi.m → Connessione SQLite e analisi della spesa sanitaria
+* mappa_epidemiologica.m → Distribuzione geografica delle patologie
+* database/ → Cartella locale protetta contenente:
 
-Fase 1: Inizializzazione del Database
-Prima di avviare l'applicazione per la prima volta (o in caso di modifica 
-dei dati grezzi nei file CSV), eseguire lo script:
->> CreaDB
+  * Anagrafica.csv
+  * Demografia.csv
+  * Epidemiologia.csv (flussi di input ISTAT)
+  * sistema_sanitario.db (database relazionale SQLite autogenerato)
 
-Questo script leggerà i flussi CSV, modellerà le tabelle relazionali, 
-inserirà le credenziali degli utenti di prova e genererà in modo sincrono
- il file 'sistema_sanitario.db' nella cartella.
+# GUIDA ALL'AVVIO E AL FUNZIONAMENTO
 
-Fase 2: Avvio dell'Applicazione
+## Fase 1: Inizializzazione del database
+
+Prima di avviare l'applicazione per la prima volta (o in caso di modifica dei dati grezzi nei file CSV), eseguire lo script:
+
+**CreaDB**
+
+Questo script leggerà i flussi CSV, modellerà le tabelle relazionali, inserirà le credenziali degli utenti di prova e genererà in modo sincrono il file **sistema_sanitario.db** nella cartella.
+
+## Fase 2: Avvio dell'applicazione
+
 Eseguire il file principale digitando nella Command Window:
->> login_centro_controllo
 
-Fase 3: Credenziali di Accesso
-- Profilo GUEST: Selezionare "Guest" dal menu a tendina (Nessuna password richiesta).
-  Garantisce l'accesso alle funzioni statistiche di base (Sesso, Età, Costi).
-- Profilo RICERCATORE: Selezionare "Ricercatore Clinico" e digitare la password:
-  Codice: ricercatore123
-  Sblocca il pannello completo con funzioni di Confronto avanzato, 
-  Previsioni temporali ed Esportazione dei dati.
+**login_centro_controllo**
 
+## Fase 3: Credenziali di accesso
 
-4. FUNZIONALITÀ AVANZATE 
-- Elaborazione Sincrona: Le callback dei grafici interrogano i database 
-  in tempo reale ad ogni clic per garantire la massima accuratezza dei dati.
-- Pattern Matching e Data Cleaning: Implementazione di filtri robusti 
-  con cicli 'for' e 'regexprep' per l'uniformazione dei testi medici.
-- Algoritmo di Reportistica PDF: Il pulsante "REPORT PDF" esegue calcoli 
-  statistici matematici (tasso di letalità medio, picco di 
-  densità geografica per regione e graduatoria Top 3 delle patologie 
-  più incidenti) generando un documento formattato ad uso clinico 
-  tramite le librerie 'mlreportgen.dom'.
-- Esportazione standard: Conversione nativa da tabelle MATLAB a formato 
-  universale CSV per l'interoperabilità con sistemi sanitari esterni.
+**Profilo GUEST:** selezionare "Guest" dal menu a tendina (nessuna password richiesta). Garantisce l'accesso alle funzioni statistiche di base.
 
+**Profilo RICERCATORE:** selezionare "Ricercatore Clinico" e digitare la password **ricercatore123**. Sblocca il pannello completo con funzioni avanzate.
+
+# MODULI OPERATIVI E INTERFACCIA GRAFICA
+
+## Modulo 1: Anagrafica Clinica Patologie
+
+Centro di consultazione e scomposizione informativa per le singole malattie autoimmuni.
+
+Attraverso un menu a tendina, l'operatore seleziona una patologia e, tramite l'attivazione di quattro pulsanti dedicati, può consultare le specifiche sotto-schermate di approfondimento: descrizione clinica, quadro sintomatologico, organi coinvolti e protocolli terapeutici.
+
+## Modulo 2: Analisi Epidemiologica e Statistica
+
+* **Mappa Epidemiologica:** rappresentazione dell'Italia suddivisa per regioni.
+* **Costi Sanitari:** calcolo dell'impatto economico complessivo per ciascuna malattia cronica.
+* **Distribuzione Demografica e di Genere:** generazione di diagrammi a torta.
+
+# FUNZIONALITÀ AVANZATE
+
+* **Elaborazione sincrona:** le callback dei grafici interrogano il database in tempo reale a ogni clic, per garantire la massima accuratezza dei dati.
+* **Pattern Matching e Data Cleaning:** implementazione di filtri robusti con cicli `for` e `regexprep` per l'uniformazione dei testi medici.
+* **Algoritmo di Reportistica PDF:** il pulsante "REPORT PDF" esegue calcoli statistici e matematici (tasso medio di letalità, picco di densità geografica per regione e graduatoria delle prime tre patologie con la maggiore incidenza), generando un documento formattato a uso clinico.
+* **Esportazione standard:** conversione nativa delle tabelle MATLAB nel formato universale CSV, per garantire l'interoperabilità con sistemi sanitari esterni.
